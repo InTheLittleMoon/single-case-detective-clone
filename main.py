@@ -1,0 +1,1 @@
+print("Single Case Detective")
