@@ -1,6 +1,6 @@
 # Single Case Detective Clone
 
-A small Python detective game.
+A small terminal based Python detective game.
 
 Scope:
 
