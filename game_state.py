@@ -1,3 +1,3 @@
 class GameState:
     def __init__(self) -> None:
-        self.current_location = "Police Office - Lobby"
+        self.current_location = "Police Station - Lobby"
