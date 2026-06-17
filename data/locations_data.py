@@ -1,10 +1,11 @@
-# each location has a list of adjacent locations that must 
+# each location has a list of adjacent locations that must
 # be traveled to in order to reach it
 LOCATIONS = {
+    # police station locations
     "Police Station - Lobby": [
         "Police Station - My Desk",
         "Police Station - Captain's Office",
-        "Bakery - My Counter",
+        "Bakery - Front Counter",
         "Marketplace - Main Street",
     ],
     "Police Station - My Desk": [
@@ -15,13 +16,17 @@ LOCATIONS = {
         "Police Station - Lobby",
         "Police Station - My Desk",
     ],
-    "Bakery - My Counter": [
+    
+    # bakery locations
+    "Bakery - Front Counter": [
         "Bakery - Kitchen",
         "Bakery - Storage Room",
         "Police Station - Lobby",
     ],
-    "Bakery - Kitchen": ["Bakery - My Counter", "Bakery - Storage Room"],
-    "Bakery - Storage Room": ["Bakery - My Counter", "Bakery - Kitchen"],
+    "Bakery - Kitchen": ["Bakery - Front Counter", "Bakery - Storage Room"],
+    "Bakery - Storage Room": ["Bakery - Front Counter", "Bakery - Kitchen"],
+    
+    # marketplace locations
     "Marketplace - Main Street": [
         "Marketplace - Rival Bakery Stall",
         "Marketplace - Loading Area",
