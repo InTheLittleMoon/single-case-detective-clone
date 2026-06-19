@@ -1,91 +1,201 @@
 from game_state import GameState
 from data.locations_data import LOCATIONS
 
-# Create the game state object that tracks player progress.
+
+# Handles player movement between connected locations
+def handle_movement(game_state):
+
+    while True:
+        available_locations = LOCATIONS[game_state.current_location]
+
+        # Story gate: before investigation starts, restrict certain areas
+        if "talked_to_captain" not in game_state.flags:
+            blocked_locations = {
+                "Bakery - Kitchen",
+                "Bakery - Storage",
+                "Marketplace - Loading Area",
+            }
+
+            available_locations = [
+                loc for loc in available_locations if loc not in blocked_locations
+            ]
+            
+            
+        print()
+        print("Where would you like to go?")
+        print()
+
+        # Display all connected locations
+        for index, location in enumerate(available_locations, start=1):
+            print(f"{index}. {location}")
+
+        print(f"{len(available_locations) + 1}. Cancel")
+        print()
+
+        move_choice = input("> ")
+
+        # Validate movement input
+        if move_choice.isdigit():
+            move_choice = int(move_choice)
+
+            # Travel to selected location
+            if 1 <= move_choice <= len(available_locations):
+                game_state.current_location = available_locations[move_choice - 1]
+
+                print()
+                print(f"Traveling to {game_state.current_location}...")
+                print()
+
+                break
+
+            # Return to previous menu
+            elif move_choice == len(available_locations) + 1:
+                print()
+                print("Travel cancelled.")
+                print()
+
+                break
+
+            else:
+                print()
+                print("Invalid destination.")
+                print()
+
+        else:
+            print()
+            print("Please enter a number.")
+            print()
+
+
+# Displays actions available at the current location
+def show_location_menu(game_state):
+
+    location = game_state.current_location
+
+    print()
+
+    if location == "Police Station - Lobby":
+        print("1. Move")
+        print("2. Quit")
+
+    elif location == "Bakery - Front Counter":
+        print("1. Look Around")
+        print("2. Move")
+        print("3. Quit")
+
+    elif location == "Marketplace - Main Street":
+        print("1. Look Around")
+        print("2. Move")
+        print("3. Quit")
+
+    # Fallback menu for locations not yet implemented
+    else:
+        print("1. Move")
+        print("2. Quit")
+
+    print()
+
+
+# Create a new game state object
 game_state = GameState()
 
-# Display the title screen once at startup.
+
+# Title screen
 print("================================")
 print("       LARP SIDE DETECTIVE")
 print("================================")
 print()
 input("Press Enter to begin...")
 
-# Main game loop - continues until the player quits.
+
+# Main game loop
 while True:
+
+    # Current location header
     print("================================")
     print("Current Location:")
     print(game_state.current_location)
     print("================================")
     print()
 
-    print("1. Move")
-    print("2. Quit")
-    print()
+    show_location_menu(game_state)
 
     choice = input("> ")
 
-    # Handle movement between connected locations.
-    if choice == "1":
+    location = game_state.current_location
 
-        # Keep the player in the movement menu until they move or cancel.
-        while True:
+    # Police Station Lobby actions
+    if location == "Police Station - Lobby":
 
-            # Retrieve valid destinations from the current location.
-            available_locations = LOCATIONS[game_state.current_location]
+        if choice == "1":
+            handle_movement(game_state)
 
+        elif choice == "2":
             print()
-            print("Where would you like to go?")
+            print("Goodbye.")
+            break
+
+        else:
             print()
-
-            # Dynamically generate the movement menu.
-            for index, location in enumerate(available_locations, start=1):
-                print(f"{index}. {location}")
-
-            print(f"{len(available_locations) + 1}. Cancel")
+            print("Invalid choice.")
             print()
 
-            move_choice = input("> ")
+    # Bakery actions
+    elif location == "Bakery - Front Counter":
 
-            # Ensure the input can safely be converted to an integer.
-            if move_choice.isdigit():
-                move_choice = int(move_choice)
+        if choice == "1":
+            print()
+            print("The smell of fresh bread fills the air.")
+            print("Maybe I'll grab a dozen before heading back to the office.")
+            print()
 
-                # Move the player to the selected destination.
-                if 1 <= move_choice <= len(available_locations):
-                    game_state.current_location = available_locations[move_choice - 1]
+        elif choice == "2":
+            handle_movement(game_state)
 
-                    print()
-                    print(f"Traveling to {game_state.current_location}...")
-                    print()
+        elif choice == "3":
+            print()
+            print("Goodbye.")
+            break
 
-                    # Exit the movement menu after a successful move.
-                    break
+        else:
+            print()
+            print("Invalid choice.")
+            print()
 
-                # Return to the main menu without changing location.
-                elif move_choice == len(available_locations) + 1:
-                    print()
-                    print("Travel cancelled.")
-                    print()
+    # Marketplace actions
+    elif location == "Marketplace - Main Street":
 
-                    break
+        if choice == "1":
+            print()
+            print("What a nice day.")
+            print("Maybe I'll come back here with my lady later.")
+            print()
 
-                else:
-                    print()
-                    print("Invalid destination.")
-                    print()
+        elif choice == "2":
+            handle_movement(game_state)
 
-            else:
-                print()
-                print("Please enter a number.")
-                print()
+        elif choice == "3":
+            print()
+            print("Goodbye.")
+            break
 
-    elif choice == "2":
-        print()
-        print("Goodbye.")
-        break
+        else:
+            print()
+            print("Invalid choice.")
+            print()
 
+    # Fallback location handling
     else:
-        print()
-        print("Invalid choice.")
-        print()
+
+        if choice == "1":
+            handle_movement(game_state)
+
+        elif choice == "2":
+            print()
+            print("Goodbye.")
+            break
+
+        else:
+            print()
+            print("Invalid choice.")
+            print()
