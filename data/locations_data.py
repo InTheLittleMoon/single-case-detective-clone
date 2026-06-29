@@ -5,7 +5,6 @@ LOCATIONS = {
     "Police Station - Lobby": [
         "Police Station - My Desk",
         "Police Station - Captain's Office",
-        "Bakery - Front Counter",
         "Marketplace - Main Street",
     ],
     "Police Station - My Desk": [
@@ -16,23 +15,22 @@ LOCATIONS = {
         "Police Station - Lobby",
         "Police Station - My Desk",
     ],
-    
+
     # bakery locations
     "Bakery - Front Counter": [
         "Bakery - Kitchen",
         "Bakery - Storage Room",
-        "Police Station - Lobby",
         "Marketplace - Main Street",
     ],
     "Bakery - Kitchen": ["Bakery - Front Counter", "Bakery - Storage Room"],
     "Bakery - Storage Room": ["Bakery - Front Counter", "Bakery - Kitchen"],
-    
+
     # marketplace locations
     "Marketplace - Main Street": [
+        "Bakery - Front Counter",
         "Marketplace - Rival Bakery Stall",
         "Marketplace - Loading Area",
         "Police Station - Lobby",
-        "Bakery - Front Counter",
     ],
     "Marketplace - Rival Bakery Stall": [
         "Marketplace - Main Street",
