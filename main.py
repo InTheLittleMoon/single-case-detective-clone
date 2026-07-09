@@ -8,17 +8,22 @@ def handle_movement(game_state):
     while True:
         available_locations = LOCATIONS[game_state.current_location]
 
-        # Story gate: before investigation starts, restrict certain areas
-        if "talked_to_captain" not in game_state.flags:
-            blocked_locations = {
-                "Bakery - Kitchen",
-                "Bakery - Storage Room",
-                "Marketplace - Loading Area",
-            }
+        # Story gates: lock investigation areas until the proper story events occur
+        blocked_locations = set()
 
-            available_locations = [
-                loc for loc in available_locations if loc not in blocked_locations
-            ]
+        # Back bakery areas stay locked until you've spoken with the Baker
+        if "talked_to_baker" not in game_state.flags:
+            blocked_locations.update(
+                {
+                    "Bakery - Kitchen",
+                    "Bakery - Storage Room",
+                    "Marketplace - Loading Area",
+                }
+            )
+
+        available_locations = [
+            loc for loc in available_locations if loc not in blocked_locations
+        ]
 
         print()
         print("Where would you like to go?")
@@ -69,8 +74,9 @@ def handle_movement(game_state):
 # confirm_quit() prompts the player to confirm quitting the game
 def confirm_quit():
     while True:
-        answer = input(
-            "Are you sure you'd like to quit the game? (y/n) ").strip().lower()
+        answer = (
+            input("Are you sure you'd like to quit the game? (y/n) ").strip().lower()
+        )
         if answer in ("y", "yes"):
             print()
             print("Goodbye.")
@@ -84,10 +90,17 @@ def confirm_quit():
         print("Please enter 'y' or 'n'.")
         print()
 
+
+# DEBUG: Display all active game flags
+# Mainly for testing, will remove once complete project is finished
+def debug_flags(game_state):
+    print()
+    print(f"[DEBUG] Current Flags: {sorted(game_state.flags)}")
+    print()
+
+
 # location handlers below
 # Handles all actions in the police station locations
-
-
 def police_station_actions(game_state):
 
     if game_state.current_location == "Police Station - Lobby":
@@ -126,59 +139,167 @@ def police_station_actions(game_state):
             print()
             return False
 
-    print()
-    print("1. Look Around")
-    print("2. Move")
-    print("3. Quit")
-    print()
+    elif game_state.current_location == "Police Station - Captain's Office":
 
-    choice = input("> ")
-
-    if choice == "1":
         print()
-        print("This room feels familiar and quiet.")
-        print("A few files are stacked neatly, but nothing seems urgent.")
+        print("1. Talk to Captain")
+        print("2. Move")
+        print("3. Quit")
         print()
-        return False
 
-    elif choice == "2":
-        handle_movement(game_state)
-        return False
+        choice = input("> ")
 
-    elif choice == "3":
-        return confirm_quit()
+        if choice == "1":
 
-    else:
+            print()
+
+            if "talked_to_captain" in game_state.flags:
+                print("Captain:")
+                print('"The bakery won\'t solve itself."')
+
+            else:
+                print("Captain:")
+                print('"Morning, detective."')
+                print('"The bakery owner reported something stolen overnight."')
+                print('"Head over there and see what you can find."')
+                print()
+                print("Detective:")
+                print('"On it, Capt."')
+
+                game_state.flags.add("talked_to_captain")
+
+                ## DEBUG: Display all active game flags, REMOVE ME LATER
+                debug_flags(game_state)
+
+            print()
+            return False
+
+        elif choice == "2":
+            handle_movement(game_state)
+            return False
+
+        elif choice == "3":
+            return confirm_quit()
+
+        else:
+            print()
+            print("Invalid choice.")
+            print()
+            return False
+
+    elif game_state.current_location == "Police Station - My Desk":
+
         print()
-        print("Invalid choice.")
+        print("1. Look Around")
+        print("2. Move")
+        print("3. Quit")
         print()
-        return False
+
+        choice = input("> ")
+
+        if choice == "1":
+            print()
+            print("My desk is exactly how I left it.")
+            print("Mostly organized... depending on who you ask.")
+            print()
+
+            return False
+
+        elif choice == "2":
+            handle_movement(game_state)
+            return False
+
+        elif choice == "3":
+            return confirm_quit()
+
+        else:
+            print()
+            print("Invalid choice.")
+            print()
+            return False
 
 
 # Handles all actions in the Bakery
 def bakery_actions(game_state):
 
     print()
-    print("1. Look Around")
-    print("2. Move")
-    print("3. Quit")
+    print("1. Talk to Baker")
+    print("2. Talk to Assistant")
+    print("3. Move")
+    print("4. Quit")
     print()
 
     choice = input("> ")
 
+    # Baker interaction
     if choice == "1":
-        print()
-        print("The smell of fresh bread fills the air.")
-        print("Maybe I'll grab a dozen before heading back to the office.")
+
         print()
 
+        # Player has not received the case yet
+        if "talked_to_captain" not in game_state.flags:
+            print("Baker:")
+            print('"Welcome in! Let me know if you need anything."')
+
+        # First time discussing the investigation
+        elif "talked_to_baker" not in game_state.flags:
+            print("Baker:")
+            print('"Detective, thank goodness you\'re here."')
+            print('"Something was stolen overnight."')
+            print("\"I've searched everywhere, but I can't figure out what happened.\"")
+            print('"Maybe my assistant noticed something I didn\'t."')
+
+            game_state.flags.add("talked_to_baker")
+            debug_flags(game_state)
+
+        # Repeat dialogue after already questioned
+        else:
+            print("Baker:")
+            print('"I hope you find out what happened."')
+
+        print()
         return False
 
+    # Assistant interaction
     elif choice == "2":
-        handle_movement(game_state)
+
+        print()
+
+        # No case exists yet
+        if "talked_to_captain" not in game_state.flags:
+            print("Assistant:")
+            print('"Welcome! Let me know if you need anything."')
+
+        # Player knows about case but has not spoken to Baker
+        elif "talked_to_baker" not in game_state.flags:
+            print("Assistant:")
+            print('"Sorry, detective."')
+            print('"You should probably speak with the boss first."')
+
+        # First assistant investigation dialogue
+        elif "talked_to_assistant" not in game_state.flags:
+            print("Assistant:")
+            print('"I still can\'t believe this happened."')
+            print('"The storage room was definitely locked."')
+            print('"I put a piece of stale baguette there..."')
+            print('"It could\'ve never been done!"')
+
+            game_state.flags.add("talked_to_assistant")
+            debug_flags(game_state)
+
+        # Repeat dialogue
+        else:
+            print("Assistant:")
+            print('"The storage room was definitely locked."')
+
+        print()
         return False
 
     elif choice == "3":
+        handle_movement(game_state)
+        return False
+
+    elif choice == "4":
         return confirm_quit()
 
     else:
@@ -237,7 +358,7 @@ def get_location_handler(location):
     if location in {
         "Marketplace - Main Street",
         "Marketplace - Rival Bakery Stall",
-        "Marketplace - Loading Area"
+        "Marketplace - Loading Area",
     }:
         return marketplace_actions
     return None
