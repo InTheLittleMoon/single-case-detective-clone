@@ -19,11 +19,10 @@ LOCATIONS = {
     # bakery locations
     "Bakery - Front Counter": [
         "Bakery - Kitchen",
-        "Bakery - Storage Room",
         "Marketplace - Main Street",
     ],
     "Bakery - Kitchen": ["Bakery - Front Counter", "Bakery - Storage Room"],
-    "Bakery - Storage Room": ["Bakery - Front Counter", "Bakery - Kitchen"],
+    "Bakery - Storage Room": [ "Bakery - Kitchen"],
 
     # marketplace locations
     "Marketplace - Main Street": [

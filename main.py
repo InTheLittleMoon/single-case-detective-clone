@@ -11,13 +11,28 @@ def handle_movement(game_state):
         # Story gates: lock investigation areas until the proper story events occur
         blocked_locations = set()
 
-        # Back bakery areas stay locked until you've spoken with the Baker
+        # Bakery back rooms remain locked until you've spoken with the Baker.
         if "talked_to_baker" not in game_state.flags:
             blocked_locations.update(
                 {
                     "Bakery - Kitchen",
                     "Bakery - Storage Room",
+                }
+            )
+
+        # The loading area remains locked until the Bakery investigation is complete.
+        if "found_storage_clue" not in game_state.flags:
+            blocked_locations.update(
+                {
                     "Marketplace - Loading Area",
+                }
+            )
+
+        # The rival baker remains inaccessible until the loading area has been investigated.
+        if "found_loading_area_clue" not in game_state.flags:
+            blocked_locations.update(
+                {
+                    "Marketplace - Rival Bakery Stall",
                 }
             )
 
@@ -123,9 +138,11 @@ def debug_flags(game_state):
 
 
 # location handlers below
-# Handles all actions in the police station locations
+# Handles all actions in the police station
 def police_station_actions(game_state):
-
+    # ---------------------------
+    # Lobby
+    # ---------------------------
     if game_state.current_location == "Police Station - Lobby":
         print()
         print("1. Talk to Janice")
@@ -162,7 +179,11 @@ def police_station_actions(game_state):
             print()
             return False
 
-    elif game_state.current_location == "Police Station - Captain's Office":
+
+    # ---------------------------
+    # Captain's Office
+    # ---------------------------
+    if game_state.current_location == "Police Station - Captain's Office":
 
         print()
         print("1. Talk to Captain")
@@ -176,26 +197,84 @@ def police_station_actions(game_state):
 
             print()
 
-            if "talked_to_captain" in game_state.flags:
-                print("Captain:")
-                print('"The bakery won\'t solve itself."')
+            # First time receiving the case
+            if "talked_to_captain" not in game_state.flags:
 
-            else:
                 print("Captain:")
                 print('"Morning, detective."')
-                print('"The bakery owner reported something stolen overnight."')
-                print('"Head over there and see what you can find."')
+                print('"We\'ve got a theft over at the bakery."')
+                print('"Someone stole their prized sourdough starter."')
                 print()
+
                 print("Detective:")
                 print('"On it, Capt."')
+                print()
 
                 game_state.flags.add("talked_to_captain")
-
-                ## DEBUG: Display all active game flags, REMOVE ME LATER
                 debug_flags(game_state)
 
-            print()
-            return False
+                return False
+
+            # Case is still in progress
+            elif "found_rival_clue" not in game_state.flags:
+
+                print("Captain:")
+                print('"Any leads yet, detective?"')
+                print()
+
+                return False
+
+            # Final conversation
+            else:
+
+                print("Captain:")
+                print('"Well, detective?"')
+                print()
+
+                print("Detective:")
+                print('"I found Old Crusty."')
+                print('"Turns out our rival baker couldn\'t resist fifteen years of flavor."')
+                print()
+
+                print("Captain:")
+                print('"Good work, detective."')
+                print('"I\'ll have the boys pick him up immediately."')
+                print()
+
+                input("Press Enter to continue...")
+
+                print()
+                print("================================")
+                print("THE LARP TIMES")
+                print("================================")
+                print()
+
+                print("LOCAL BAKER ARRESTED IN SOURDOUGH HEIST")
+                print()
+
+                print(
+                    "Authorities arrested a local rival baker yesterday for "
+                    "the theft of a fifteen-year-old sourdough starter known "
+                    "as 'Old Crusty.'"
+                )
+                print()
+
+                print(
+                    "It's a shame, too. He reportedly made the best apple "
+                    "strudel in town."
+                )
+                print()
+
+                print(
+                    "Old Crusty has since been returned safely to his rightful "
+                    "home at the bakery."
+                )
+                print()
+
+                print("THE END")
+                print()
+
+                return True
 
         elif choice == "2":
             handle_movement(game_state)
@@ -210,6 +289,10 @@ def police_station_actions(game_state):
             print()
             return False
 
+
+    # ---------------------------
+    # My Desk
+    # ---------------------------
     elif game_state.current_location == "Police Station - My Desk":
 
         print()
@@ -465,34 +548,210 @@ def bakery_actions(game_state):
 # Handles all actions in the Marketplace
 def marketplace_actions(game_state):
 
-    print()
-    print("1. Look Around")
-    print("2. Move")
-    print("3. Quit")
-    print()
+    # ---------------------------
+    # Main Street
+    # ---------------------------
+    if game_state.current_location == "Marketplace - Main Street":
 
-    choice = input("> ")
-
-    if choice == "1":
         print()
-        print("What a nice day.")
-        print("Maybe I'll come back here with my lady later.")
+        print("1. Look around")
+        print("2. Move")
+        print("3. Quit")
         print()
 
-        return False
+        choice = input("> ")
 
-    elif choice == "2":
-        handle_movement(game_state)
-        return False
+        if choice == "1":
 
-    elif choice == "3":
-        return confirm_quit()
+            print()
 
-    else:
+            if "talked_to_captain" not in game_state.flags:
+                print("The marketplace is bustling with activity.")
+                print("Maybe I'll stop by after work.")
+
+            else:
+                print("The marketplace is bustling with activity.")
+                print("Someone around here knows something about Old Crusty.")
+
+            print()
+
+            return False
+
+        elif choice == "2":
+            handle_movement(game_state)
+            return False
+
+        elif choice == "3":
+            return confirm_quit()
+
+        else:
+            print()
+            print("Invalid choice.")
+            print()
+            return False
+
+    # ---------------------------
+    # Loading Area
+    # ---------------------------
+    elif game_state.current_location == "Marketplace - Loading Area":
+
         print()
-        print("Invalid choice.")
+        print("1. Talk to Delivery Driver")
+        print("2. Look Around")
+        print("3. Move")
+        print("4. Quit")
         print()
-        return False
+
+        choice = input("> ")
+
+        # Delivery Driver dialogue
+        if choice == "1":
+
+            print()
+
+            if "talked_to_delivery_driver" not in game_state.flags:
+
+                print("Delivery Driver:")
+                print('"Morning, detective."')
+                print('"No deliveries came through this morning."')
+                print(
+                    '"Though I did see that rival baker hanging around here before sunrise."'
+                )
+
+                game_state.flags.add("talked_to_delivery_driver")
+                debug_flags(game_state)
+
+            else:
+
+                print("Delivery Driver:")
+                print('"I\'m telling you, he was acting strange."')
+
+            print()
+            return False
+
+        # Environmental clue
+        elif choice == "2":
+
+            print()
+
+            print("Wooden carts line the loading area.")
+            print("One of them has fresh flour smeared across its handle.")
+            print()
+
+            print("Detective:")
+            print('"Looks like someone was moving something heavy through here."')
+            print()
+
+            if "found_loading_area_clue" not in game_state.flags:
+                game_state.flags.add("found_loading_area_clue")
+                debug_flags(game_state)
+
+            return False
+
+        elif choice == "3":
+            handle_movement(game_state)
+            return False
+
+        elif choice == "4":
+            return confirm_quit()
+
+        else:
+            print()
+            print("Invalid choice.")
+            print()
+            return False
+
+    # ---------------------------
+    # Rival Bakery Stall
+    # ---------------------------
+    elif game_state.current_location == "Marketplace - Rival Bakery Stall":
+
+        print()
+        print("1. Talk to Rival Baker")
+        print("2. Look Around")
+        print("3. Move")
+        print("4. Quit")
+        print()
+
+        choice = input("> ")
+
+        # Rival Baker dialogue
+        if choice == "1":
+
+            print()
+
+            if "talked_to_rival_baker" not in game_state.flags:
+
+                print("Rival Baker:")
+                print('"Can I help you, detective?"')
+
+                print()
+                print("Detective:")
+                print('"Just asking a few questions."')
+
+                print()
+                print("Rival Baker:")
+                print('"Then ask away. I\'ve got dough to make."')
+
+                game_state.flags.add("talked_to_rival_baker")
+                debug_flags(game_state)
+
+            else:
+
+                print("Rival Baker:")
+                print('"Business doesn\'t stop for investigations."')
+
+            print()
+            return False
+
+        # Look Around
+        elif choice == "2":
+
+            print()
+
+            # First time discovering the final clue
+            if "found_rival_clue" not in game_state.flags:
+
+                print("A large ceramic container sits behind the counter.")
+                print("Whatever is inside appears to be bubbling.")
+                print()
+
+                print("Detective:")
+                print('"I don\'t know much about baking..."')
+                print(
+                    "\"...but I'm pretty sure bread isn't supposed to be breathing.\""
+                )
+                print()
+
+                print(
+                    "The sour smell coming from the container is identical to the one in the bakery's storage room."
+                )
+                print()
+
+                game_state.flags.add("found_rival_clue")
+                debug_flags(game_state)
+
+            # Repeat dialogue
+            else:
+
+                print("The ceramic container continues to bubble ominously.")
+                print("You've seen enough to know where Old Crusty ended up.")
+
+            print()
+            return False
+
+        elif choice == "3":
+            handle_movement(game_state)
+            return False
+
+        elif choice == "4":
+            return confirm_quit()
+
+        else:
+            print()
+            print("Invalid choice.")
+            print()
+            return False
 
 
 # Main game loop
